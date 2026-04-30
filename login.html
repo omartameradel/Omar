@@ -2,138 +2,284 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Omar_Media Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Omar_Media | Login</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
     <style>
-        body { font-family: 'Cairo', sans-serif; }
-        .bg-circuit {
-            background-image: url('https://www.transparenttextures.com/patterns/circuit-board.png');
-            background-color: #f3f4f6;
+        :root {
+            --main-blue: #0d48a1;
+            --second-blue: #1e88e5;
+            --accent-gold: #fbbc04;
+            --bg-gradient: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            --glass: rgba(255, 255, 255, 0.9);
         }
-        #support-modal { display: none; }
-        #support-modal.open { display: flex; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Cairo', sans-serif !important;
+            background: var(--bg-gradient);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .main-container { display: grid; grid-template-columns: 1fr 1fr; height: 100vh; width: 100%; }
+
+        .login-side {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 1.5rem; box-shadow: -10px 0 30px rgba(0,0,0,0.05);
+            overflow-y: auto;
+        }
+
+        .form-wrapper { width: 100%; max-width: 400px; text-align: center; }
+
+        .input-group { margin-bottom: 1rem; text-align: right; }
+
+        label { font-weight: 700; margin-bottom: 5px; display: block; color: #444; font-size: 0.9rem; }
+
+        input, textarea {
+            width: 100%; padding: 12px; border: 2px solid #ddd;
+            border-radius: 10px; font-family: 'Cairo', sans-serif; transition: 0.3s;
+        }
+
+        input:focus { border-color: var(--main-blue); outline: none; box-shadow: 0 0 8px rgba(13, 72, 161, 0.1); }
+
+        .btn-login {
+            width: 100%; padding: 12px; background: linear-gradient(45deg, var(--main-blue), var(--second-blue));
+            color: white; border: none; border-radius: 10px; font-weight: 900;
+            font-size: 1rem; cursor: pointer; transition: 0.3s; margin-top: 5px;
+        }
+
+        .btn-login:disabled { background: #ccc; cursor: not-allowed; }
+
+        .btn-google {
+            width: 100%; padding: 10px; background: white; color: #555;
+            border: 2px solid #ddd; border-radius: 10px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            cursor: pointer; transition: 0.3s; margin-top: 10px;
+        }
+
+        .forgot-pass {
+            display: block; margin-top: 10px; color: var(--second-blue);
+            font-size: 0.85rem; text-decoration: none; cursor: pointer; font-weight: 600;
+        }
+
+        .info-side { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; text-align: center; }
+        .info-side h1 { font-size: 5rem; font-weight: 900; background: linear-gradient(to bottom, var(--main-blue), var(--second-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .help-fab {
+            position: fixed; bottom: 20px; right: 20px; background: var(--accent-gold);
+            width: 55px; height: 55px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; border: none; z-index: 999;
+        }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
+        .modal-content {
+            background-color: white; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); padding: 20px; border-radius: 15px;
+            width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto;
+        }
+
+        .close { float: left; font-size: 24px; font-weight: bold; cursor: pointer; color: #888; }
+
+        @media (max-width: 900px) { .main-container { grid-template-columns: 1fr; } .info-side { display: none; } }
     </style>
 </head>
-<body class="bg-white min-h-screen flex flex-col md:flex-row overflow-x-hidden">
+<body>
 
-    <div class="hidden md:flex md:w-1/2 bg-circuit flex-col items-center justify-center p-12 text-center border-l border-gray-200">
-        <h1 class="text-5xl font-bold text-[#0D48A1] mb-6">Omar_Media</h1>
-        <h2 class="text-2xl font-bold text-black mb-8">Pro</h2>
-        <p class="font-semibold text-gray-700 text-lg">"منصة Omar_Media - منصة متخصصة في مشاركة الوسائط والبرمجة بواسطة عمر تامر"</p>
-    </div>
-
-    <div class="w-full md:w-1/2 flex items-center justify-center p-8 relative">
-        <div class="w-full max-w-md flex flex-col items-center">
-            <div class="mb-8">
-                <img src="https://omartamer.netlify.app/Omar_Media.png" class="h-16" alt="Logo">
-            </div>
-            <h3 class="text-2xl font-bold text-[#0D48A1] mb-2">مرحبًا بعودتك</h3>
-            
-            <form id="loginForm" class="w-full space-y-5 mt-6">
-                <input type="email" id="email" class="w-full border border-gray-300 rounded-lg h-12 px-4 text-right outline-none focus:ring-2 focus:ring-blue-500" placeholder="البريد الإلكتروني" required>
+    <div class="main-container">
+        <section class="login-side">
+            <div class="form-wrapper">
+                <h2 style="color: var(--main-blue); font-weight: 900; margin-bottom: 20px;">Omar_Media</h2>
                 
-                <div class="space-y-2">
-                    <input type="password" id="password" class="w-full border border-gray-300 rounded-lg h-12 px-4 text-right outline-none focus:ring-2 focus:ring-blue-500" placeholder="كلمة المرور" required>
-   <div class="text-right">
-    <a href="forgot password.html" class="text-sm font-semibold text-blue-600 hover:text-[#0D48A1] hover:underline transition-all">
-        هل نسيت كلمة المرور؟
-    </a>
-</div>
-                </div>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <label>البريد الإلكتروني</label>
+                        <input type="email" id="loginEmail" placeholder="example@mail.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label>كلمة المرور</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-login" id="submitLogin">تسجيل الدخول</button>
+                    <span class="forgot-pass" onclick="forgotPassword()">نسيت كلمة المرور؟</span>
+                </form>
 
-                <button type="submit" class="w-full bg-[#0D48A1] text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition-colors shadow-lg">تسجيل الدخول</button>
-            </form>
-        </div>
+                <div style="margin: 15px 0; color: #ccc; font-size: 0.8rem;">أو</div>
+
+                <button class="btn-google" onclick="googleLogin()">
+                    <img src="https://www.gstatic.com/images/branding/searchlogo/ico/favicon.ico" width="18" alt="G">
+                    تسجيل الدخول بواسطة جوجل
+                </button>
+            </div>
+        </section>
+
+        <section class="info-side">
+            <h1>Omar_Media</h1>
+            <h2 style="color: #333; margin-top: -10px;">Pro Platform</h2>
+            <p style="color: #666; max-width: 350px; margin-top: 15px;">منصة متخصصة في مشاركة الوسائط والبرمجة بواسطة عمر تامر</p>
+        </section>
     </div>
 
-    <button onclick="toggleSupport()" class="fixed bottom-6 left-6 bg-[#0D48A1] text-white px-5 py-2.5 rounded-full flex items-center gap-2 shadow-xl hover:scale-105 transition-transform z-40">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-        <span class="text-sm font-bold">هل تحتاج مساعدة؟</span>
+    <button class="help-fab" onclick="openHelp()">
+        <i class="fa-solid fa-headset"></i>
     </button>
 
-    <div id="support-modal" class="fixed inset-0 z-50 items-center justify-center bg-black/50 p-4">
-        <div class="bg-white w-full max-w-md rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-gray-100 p-4 flex justify-between items-center border-b">
-                <h2 class="text-lg font-semibold text-[#0D48A1]">مركز الدعم</h2>
-                <button onclick="toggleSupport()" class="text-gray-500 hover:text-red-500 text-xl">✕</button>
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeHelp()">&times;</span>
+            <h3 style="color: var(--main-blue); font-weight: 900; margin-bottom: 15px; text-align: center;">الدعم الفني</h3>
+            
+            <div class="input-group">
+                <label>البريد الإلكتروني</label>
+                <input type="email" id="helpEmail" placeholder="اكتب إيميلك هنا">
             </div>
-            <form class="p-6 space-y-4 overflow-y-auto">
-                <div>
-                    <label class="block text-sm font-bold text-gray-700">الاسم بالكامل</label>
-                    <input type="text" class="w-full border border-gray-300 rounded-md h-11 px-4 text-right outline-none focus:ring-2 focus:ring-blue-500" placeholder="اكتب اسمك هنا">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700">الموضوع</label>
-                    <input type="text" class="w-full border border-gray-300 rounded-md h-11 px-4 text-right outline-none focus:ring-2 focus:ring-blue-500" placeholder="ملخص المشكلة">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700">الوصف التفصيلي</label>
-                    <textarea class="w-full border border-gray-300 rounded-md h-24 p-3 text-right outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="اشرح مشكلتك..."></textarea>
-                </div>
-                <div class="flex gap-3 pt-2">
-                    <button type="submit" class="flex-1 bg-[#0D48A1] text-white py-2.5 rounded-md font-bold">إرسال التذكرة</button>
-                    <button type="button" onclick="toggleSupport()" class="flex-1 border border-gray-300 py-2.5 rounded-md font-bold text-gray-600">إلغاء</button>
-                </div>
-            </form>
+
+            <div class="input-group">
+                <label>عنوان المشكلة</label>
+                <input type="text" id="helpSubject" placeholder="ما هي المشكلة؟">
+            </div>
+
+            <div class="input-group">
+                <label>التفاصيل</label>
+                <textarea id="helpDesc" rows="3" placeholder="اشرح لنا أكثر..."></textarea>
+            </div>
+
+            <button class="btn-login" id="sendHelpBtn" onclick="submitHelpRequest()">إرسال الطلب للأدمن</button>
         </div>
     </div>
 
-    <script type="module">
-    // 1. استيراد المكتبات
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    <script>
+        // --- إعدادات فيربيس ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAhDmoZVk1nW2SvrXawD7IlIUtr7kRCk98",
+            authDomain: "photo-19b48.firebaseapp.com",
+            projectId: "photo-19b48",
+            storageBucket: "photo-19b48.firebasestorage.app",
+            messagingSenderId: "661677924920",
+            appId: "1:661677924920:web:94de5f445904e0036ebccd",
+            measurementId: "G-4MDMCEQMMG"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-    // 2. إعدادات Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyAhDmoZVk1nW2SvrXawD7IlIUtr7kRCk98",
-        authDomain: "photo-19b48.firebaseapp.com",
-        projectId: "photo-19b48",
-        storageBucket: "photo-19b48.firebasestorage.app",
-        messagingSenderId: "661677924920",
-        appId: "1:661677924920:web:94de5f445904e0036ebccd",
-        measurementId: "G-4MDMCEQMMG"
-    };
+        // --- 1. تسجيل الدخول العادي (تمت إضافته) ---
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('submitLogin');
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+            btn.disabled = true;
+            btn.innerText = "جاري الدخول...";
 
-    // --- وظائف النافذة (المودال) ---
-    // تعريفها على window لتراها أزرار الـ HTML
-    window.toggleSupport = function() {
-        const modal = document.getElementById('support-modal');
-        if (modal) {
-            modal.classList.toggle('open');
-        }
-    };
+            auth.signInWithEmailAndPassword(email, pass)
+                .then((userCredential) => {
+                    alert("أهلاً بك! تم تسجيل الدخول بنجاح.");
+                    // window.location.href = "home.html"; // وجهه لصفحة الرئيسية هنا
+                })
+                .catch((error) => {
+                    alert("خطأ: " + error.message);
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerText = "تسجيل الدخول";
+                });
+        });
 
-    // إغلاق المودال عند الضغط خارجه
-    window.onclick = function(event) {
-        const modal = document.getElementById('support-modal');
-        if (event.target == modal) {
-            modal.classList.remove('open');
-        }
-    };
+        // --- 2. تسجيل دخول جوجل ---
+   function googleLogin() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    // استخدام Redirect بدلاً من Popup يحل مشاكل كثيرة في المتصفحات
+    auth.signInWithRedirect(provider);
+}
 
-    // --- وظيفة تسجيل الدخول ---
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+// أضف هذا الكود تحت الدالة مباشرة للتعامل مع النتيجة بعد العودة للموقع
+auth.getRedirectResult().then((result) => {
+    if (result.user) {
+        alert("أهلاً بك يا " + result.user.displayName);
+    }
+}).catch((error) => {
+    if(error.code !== 'auth/operation-not-supported-in-this-environment') {
+        console.error(error.message);
+    }
+});
 
-        signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                alert("تم الدخول بنجاح! مرحباً بك يا بطل.");
-                window.location.href = "home.html";
-            })
-            .catch((error) => {
+        // --- 3. نسيت كلمة المرور ---
+   function forgotPassword() {
+    const email = document.getElementById('loginEmail').value;
+    if(!email) {
+        alert("من فضلك اكتب بريدك الإلكتروني في الخانة المخصصة أولاً.");
+        return;
+    }
+    
+    auth.sendPasswordResetEmail(email)
+        .then(() => {
+            alert("تم إرسال رابط استعادة كلمة المرور إلى: " + email + " (افحص الـ Spam أيضاً)");
+        })
+        .catch((error) => {
+            // هنا سنعرف السبب الحقيقي
+            console.error("Error Code:", error.code);
+            if (error.code === 'auth/user-not-found') {
+                alert("هذا البريد الإلكتروني غير مسجل لدينا.");
+            } else if (error.code === 'auth/invalid-email') {
+                alert("صيغة البريد الإلكتروني غير صحيحة.");
+            } else {
                 alert("خطأ: " + error.message);
-            });
-    });
+            }
+        });
+}
 
+        // --- 4. إرسال مشكلة للأدمن ---
+        async function submitHelpRequest() {
+            const email = document.getElementById('helpEmail').value;
+            const subject = document.getElementById('helpSubject').value;
+            const desc = document.getElementById('helpDesc').value;
+            const btn = document.getElementById('sendHelpBtn');
 
+            if(!email || !subject || !desc) return alert("برجاء ملء جميع الحقول");
 
-</script>
+            btn.disabled = true;
+            btn.innerText = "جاري الإرسال...";
+
+            try {
+                // ملاحظة: قمت بإزالة شرط فحص وجود المستخدم لتسهيل التواصل حتى لغير المسجلين
+                await db.collection('support_requests').add({
+                    user_email: email,
+                    subject: subject,
+                    description: desc,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'pending'
+                });
+                alert("تم إرسال مشكلتك بنجاح، سيقوم الأدمن بالرد عليك قريباً.");
+                closeHelp();
+            } catch (err) {
+                console.error(err);
+                alert("حدث خطأ! تأكد من إعدادات Firestore Rules في لوحة تحكم Firebase.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "إرسال الطلب للأدمن";
+            }
+        }
+
+        // وظائف المودال
+        function openHelp() { document.getElementById('helpModal').style.display = 'block'; }
+        function closeHelp() { document.getElementById('helpModal').style.display = 'none'; }
+        window.onclick = (e) => { if(e.target == document.getElementById('helpModal')) closeHelp(); }
+    </script>
 </body>
 </html>
