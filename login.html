@@ -114,7 +114,7 @@
                         <input type="password" id="loginPassword" placeholder="••••••••" required>
                     </div>
                     <button type="submit" class="btn-login" id="submitLogin">تسجيل الدخول</button>
-                    <span class="forgot-pass" onclick="forgotPassword()">نسيت كلمة المرور؟</span>
+                    <a  class="forgot-pass" href="forget-password.html">نسيت كلمة المرور؟</a>
                 </form>
 
                 <div style="margin: 15px 0; color: #ccc; font-size: 0.8rem;">أو</div>
@@ -161,125 +161,134 @@
         </div>
     </div>
 
-    <script>
-        // --- إعدادات فيربيس ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyAhDmoZVk1nW2SvrXawD7IlIUtr7kRCk98",
-            authDomain: "photo-19b48.firebaseapp.com",
-            projectId: "photo-19b48",
-            storageBucket: "photo-19b48.firebasestorage.app",
-            messagingSenderId: "661677924920",
-            appId: "1:661677924920:web:94de5f445904e0036ebccd",
-            measurementId: "G-4MDMCEQMMG"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+   <script>
+    // --- إعدادات فيربيس (كما هي لديك) ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyAhDmoZVk1nW2SvrXawD7IlIUtr7kRCk98",
+        authDomain: "photo-19b48.firebaseapp.com",
+        projectId: "photo-19b48",
+        storageBucket: "photo-19b48.firebasestorage.app",
+        messagingSenderId: "661677924920",
+        appId: "1:661677924920:web:94de5f445904e0036ebccd",
+        measurementId: "G-4MDMCEQMMG"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-        // --- 1. تسجيل الدخول العادي (تمت إضافته) ---
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPassword').value;
-            const btn = document.getElementById('submitLogin');
+    // --- 1. مراقب حالة الدخول (يوجه المستخدم فوراً إذا سجل دخوله) ---
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            // إذا سجل دخول بنجاح، يذهب للرئيسية
+            window.location.href = "home.html";
+        }
+    });
 
-            btn.disabled = true;
-            btn.innerText = "جاري الدخول...";
+    // --- 2. تسجيل الدخول العادي ---
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPassword').value;
+        const btn = document.getElementById('submitLogin');
 
-            auth.signInWithEmailAndPassword(email, pass)
-                .then((userCredential) => {
-                    alert("أهلاً بك! تم تسجيل الدخول بنجاح.");
-                    // window.location.href = "home.html"; // وجهه لصفحة الرئيسية هنا
-                })
-                .catch((error) => {
-                    alert("خطأ: " + error.message);
-                })
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.innerText = "تسجيل الدخول";
-                });
-        });
+        btn.disabled = true;
+        btn.innerText = "جاري الدخول...";
 
-        // --- 2. تسجيل دخول جوجل ---
-   function googleLogin() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    // استخدام Redirect بدلاً من Popup يحل مشاكل كثيرة في المتصفحات
-    auth.signInWithRedirect(provider);
-}
+        auth.signInWithEmailAndPassword(email, pass)
+            .then(() => {
+                window.location.href = "home.html";
+            })
+            .catch((error) => {
+                alert("خطأ: " + error.message);
+                btn.disabled = false;
+                btn.innerText = "تسجيل الدخول";
+            });
+    });
 
-// أضف هذا الكود تحت الدالة مباشرة للتعامل مع النتيجة بعد العودة للموقع
-auth.getRedirectResult().then((result) => {
-    if (result.user) {
-        alert("أهلاً بك يا " + result.user.displayName);
-    }
-}).catch((error) => {
-    if(error.code !== 'auth/operation-not-supported-in-this-environment') {
-        console.error(error.message);
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // 1. فحص الحالة فور فتح الصفحة (هذا ما طلبته)
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            window.location.href = "home.html";
+        }
+    });
+    
+// --- مراقب حالة المستخدم للتوجيه التلقائي ---
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        // إذا كان المستخدم مسجل دخوله بالفعل، انقله فوراً للهوم
+        console.log("المستخدم مسجل دخول بالفعل:", user.email);
+        window.location.href = "home.html";
+    } else {
+        // إذا لم يكن مسجل، ابقِ في صفحة تسجيل الدخول
+        console.log("لا يوجد مستخدم مسجل حالياً");
     }
 });
-
-        // --- 3. نسيت كلمة المرور ---
-   function forgotPassword() {
-    const email = document.getElementById('loginEmail').value;
-    if(!email) {
-        alert("من فضلك اكتب بريدك الإلكتروني في الخانة المخصصة أولاً.");
-        return;
+    // --- 3. تسجيل دخول جوجل (المعدل ليعمل فوراً) ---
+    function googleLogin() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider)
+            .then((result) => {
+                console.log("Logged in:", result.user);
+                window.location.href = "home.html";
+            })
+            .catch((error) => {
+                alert("حدث خطأ في جوجل: " + error.message);
+            });
     }
-    
-    auth.sendPasswordResetEmail(email)
-        .then(() => {
-            alert("تم إرسال رابط استعادة كلمة المرور إلى: " + email + " (افحص الـ Spam أيضاً)");
-        })
-        .catch((error) => {
-            // هنا سنعرف السبب الحقيقي
-            console.error("Error Code:", error.code);
-            if (error.code === 'auth/user-not-found') {
-                alert("هذا البريد الإلكتروني غير مسجل لدينا.");
-            } else if (error.code === 'auth/invalid-email') {
-                alert("صيغة البريد الإلكتروني غير صحيحة.");
-            } else {
-                alert("خطأ: " + error.message);
-            }
-        });
-}
 
-        // --- 4. إرسال مشكلة للأدمن ---
-        async function submitHelpRequest() {
-            const email = document.getElementById('helpEmail').value;
-            const subject = document.getElementById('helpSubject').value;
-            const desc = document.getElementById('helpDesc').value;
-            const btn = document.getElementById('sendHelpBtn');
+    // --- 4. إرسال مشكلة للدعم (مع شرط وجود الإيميل في الداتا بيز) ---
+    async function submitHelpRequest() {
+        const email = document.getElementById('helpEmail').value;
+        const subject = document.getElementById('helpSubject').value;
+        const desc = document.getElementById('helpDesc').value;
+        const btn = document.getElementById('sendHelpBtn');
 
-            if(!email || !subject || !desc) return alert("برجاء ملء جميع الحقول");
+        if(!email || !subject || !desc) return alert("برجاء ملء جميع الحقول");
 
-            btn.disabled = true;
-            btn.innerText = "جاري الإرسال...";
+        btn.disabled = true;
+        btn.innerText = "جاري التحقق من حسابك...";
 
-            try {
-                // ملاحظة: قمت بإزالة شرط فحص وجود المستخدم لتسهيل التواصل حتى لغير المسجلين
-                await db.collection('support_requests').add({
-                    user_email: email,
-                    subject: subject,
-                    description: desc,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    status: 'pending'
-                });
-                alert("تم إرسال مشكلتك بنجاح، سيقوم الأدمن بالرد عليك قريباً.");
-                closeHelp();
-            } catch (err) {
-                console.error(err);
-                alert("حدث خطأ! تأكد من إعدادات Firestore Rules في لوحة تحكم Firebase.");
-            } finally {
+        try {
+            // نبحث في مجموعة users عن مستخدم بهذا الإيميل
+            // ملاحظة: يجب أن يكون لديك مجموعة في Firestore باسم 'users' تخزن فيها بيانات المسجلين
+            const userRef = await db.collection('users').where('email', '==', email).get();
+
+            if (userRef.empty) {
+                alert("❌ عذراً، هذا البريد غير مسجل لدينا. يجب أن تملك حساباً لتتمكن من مراسلة الدعم.");
                 btn.disabled = false;
                 btn.innerText = "إرسال الطلب للأدمن";
+                return;
             }
-        }
 
-        // وظائف المودال
-        function openHelp() { document.getElementById('helpModal').style.display = 'block'; }
-        function closeHelp() { document.getElementById('helpModal').style.display = 'none'; }
-        window.onclick = (e) => { if(e.target == document.getElementById('helpModal')) closeHelp(); }
-    </script>
+            // إذا وجده، يرسل الطلب
+            await db.collection('support_requests').add({
+                user_email: email,
+                subject: subject,
+                description: desc,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                status: 'pending'
+            });
+
+            alert("✅ تم إرسال مشكلتك بنجاح.");
+            closeHelp();
+        } catch (err) {
+            console.error(err);
+            alert("حدث خطأ في الاتصال بقاعدة البيانات.");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "إرسال الطلب للأدمن";
+        }
+    }
+
+    // وظائف المودال (فتح وإغلاق)
+    function openHelp() { document.getElementById('helpModal').style.display = 'block'; }
+    function closeHelp() { document.getElementById('helpModal').style.display = 'none'; }
+    window.onclick = (e) => { if(e.target == document.getElementById('helpModal')) closeHelp(); }
+</script>
 </body>
 </html>
