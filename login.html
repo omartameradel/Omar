@@ -114,7 +114,7 @@
                         <input type="password" id="loginPassword" placeholder="••••••••" required>
                     </div>
                     <button type="submit" class="btn-login" id="submitLogin">تسجيل الدخول</button>
-                    <a class="forgot-pass" href="forget-password.html">نسيت كلمة المرور؟</a>
+                    <a  class="forgot-pass" href="forget-password.html">نسيت كلمة المرور؟</a>
                 </form>
 
                 <div style="margin: 15px 0; color: #ccc; font-size: 0.8rem;">أو</div>
@@ -161,8 +161,9 @@
         </div>
     </div>
 
-<script>
-    // --- 1. إعدادات فيربيس (مرة واحدة فقط) ---
+   <script>
+    // --- إعدادات فيربيس (كما هي لديك) ---
+// --- 1. إعدادات فيربيس (مرة واحدة فقط) ---
     const firebaseConfig = {
         apiKey: "AIzaSyAhDmoZVk1nW2SvrXawD7IlIUtr7kRCk98",
         authDomain: "photo-19b48.firebaseapp.com",
@@ -177,17 +178,11 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // --- 2. مراقب حالة الدخول (التوجيه التلقائي) ---
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            console.log("المستخدم مسجل دخول بالفعل:", user.email);
-            window.location.href = "home.html";
-        } else {
-            console.log("لا يوجد مستخدم مسجل حالياً");
-        }
-    });
+    // --- 2. إجبار تسجيل الخروج عند فتح الصفحة ---
+    // السطر ده هو اللي هيخلي الصفحة تثبت وما تروحش للهوم لوحدها
+    auth.signOut(); 
 
-    // --- 3. تسجيل الدخول العادي ---
+    // --- 3. تسجيل الدخول العادي (عند الضغط على الزرار فقط) ---
     document.getElementById('loginForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
@@ -195,14 +190,15 @@
         const btn = document.getElementById('submitLogin');
 
         btn.disabled = true;
-        btn.innerText = "جاري الدخول...";
+        btn.innerText = "جاري التحقق...";
 
         auth.signInWithEmailAndPassword(email, pass)
             .then(() => {
+                // مش هيروح للهوم غير لما يكتب البيانات صح ويضغط دخول
                 window.location.href = "home.html";
             })
             .catch((error) => {
-                alert("خطأ في الدخول: " + error.message);
+                alert("بيانات الدخول غير صحيحة");
                 btn.disabled = false;
                 btn.innerText = "تسجيل الدخول";
             });
@@ -220,51 +216,43 @@
             });
     }
 
-    // --- 5. إرسال مشكلة للدعم ---
-    async function submitHelpRequest() {
-        const email = document.getElementById('helpEmail').value;
-        const subject = document.getElementById('helpSubject').value;
-        const desc = document.getElementById('helpDesc').value;
-        const btn = document.getElementById('sendHelpBtn');
+       // --- 4. إرسال مشكلة للأدمن ---
+        async function submitHelpRequest() {
+            const email = document.getElementById('helpEmail').value;
+            const subject = document.getElementById('helpSubject').value;
+            const desc = document.getElementById('helpDesc').value;
+            const btn = document.getElementById('sendHelpBtn');
 
-        if(!email || !subject || !desc) return alert("برجاء ملء جميع الحقول");
+            if(!email || !subject || !desc) return alert("برجاء ملء جميع الحقول");
 
-        btn.disabled = true;
-        btn.innerText = "جاري التحقق من حسابك...";
+            btn.disabled = true;
+            btn.innerText = "جاري الإرسال...";
 
-        try {
-            const userRef = await db.collection('users').where('email', '==', email).get();
-
-            if (userRef.empty) {
-                alert("❌ عذراً، هذا البريد غير مسجل لدينا. يجب أن تملك حساباً لتتمكن من مراسلة الدعم.");
+            try {
+                // ملاحظة: قمت بإزالة شرط فحص وجود المستخدم لتسهيل التواصل حتى لغير المسجلين
+                await db.collection('support_requests').add({
+                    user_email: email,
+                    subject: subject,
+                    description: desc,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'pending'
+                });
+                alert("تم إرسال مشكلتك بنجاح، سيقوم الأدمن بالرد عليك قريباً.");
+                closeHelp();
+            } catch (err) {
+                console.error(err);
+                alert("حدث خطأ! تأكد من إعدادات Firestore Rules في لوحة تحكم Firebase.");
+            } finally {
                 btn.disabled = false;
                 btn.innerText = "إرسال الطلب للأدمن";
-                return;
             }
-
-            await db.collection('support_requests').add({
-                user_email: email,
-                subject: subject,
-                description: desc,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                status: 'pending'
-            });
-
-            alert("✅ تم إرسال مشكلتك بنجاح.");
-            closeHelp();
-        } catch (err) {
-            console.error(err);
-            alert("حدث خطأ في الاتصال بقاعدة البيانات.");
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "إرسال الطلب للأدمن";
         }
-    }
 
-    // وظائف المودال
-    function openHelp() { document.getElementById('helpModal').style.display = 'block'; }
-    function closeHelp() { document.getElementById('helpModal').style.display = 'none'; }
-    window.onclick = (e) => { if(e.target == document.getElementById('helpModal')) closeHelp(); }
+        // وظائف المودال
+        function openHelp() { document.getElementById('helpModal').style.display = 'block'; }
+        function closeHelp() { document.getElementById('helpModal').style.display = 'none'; }
+        window.onclick = (e) => { if(e.target == document.getElementById('helpModal')) closeHelp(); }
+   
 </script>
 </body>
 </html>
