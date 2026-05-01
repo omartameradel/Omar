@@ -114,7 +114,7 @@
                         <input type="password" id="loginPassword" placeholder="••••••••" required>
                     </div>
                     <button type="submit" class="btn-login" id="submitLogin">تسجيل الدخول</button>
-                    <a  class="forgot-pass" href="forget-password.html">نسيت كلمة المرور؟</a>
+                    <a class="forgot-pass" href="forget-password.html">نسيت كلمة المرور؟</a>
                 </form>
 
                 <div style="margin: 15px 0; color: #ccc; font-size: 0.8rem;">أو</div>
@@ -161,8 +161,8 @@
         </div>
     </div>
 
-   <script>
-    // --- إعدادات فيربيس (كما هي لديك) ---
+<script>
+    // --- 1. إعدادات فيربيس (مرة واحدة فقط) ---
     const firebaseConfig = {
         apiKey: "AIzaSyAhDmoZVk1nW2SvrXawD7IlIUtr7kRCk98",
         authDomain: "photo-19b48.firebaseapp.com",
@@ -177,15 +177,17 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // --- 1. مراقب حالة الدخول (يوجه المستخدم فوراً إذا سجل دخوله) ---
+    // --- 2. مراقب حالة الدخول (التوجيه التلقائي) ---
     auth.onAuthStateChanged((user) => {
         if (user) {
-            // إذا سجل دخول بنجاح، يذهب للرئيسية
+            console.log("المستخدم مسجل دخول بالفعل:", user.email);
             window.location.href = "home.html";
+        } else {
+            console.log("لا يوجد مستخدم مسجل حالياً");
         }
     });
 
-    // --- 2. تسجيل الدخول العادي ---
+    // --- 3. تسجيل الدخول العادي ---
     document.getElementById('loginForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
@@ -200,40 +202,17 @@
                 window.location.href = "home.html";
             })
             .catch((error) => {
-                alert("خطأ: " + error.message);
+                alert("خطأ في الدخول: " + error.message);
                 btn.disabled = false;
                 btn.innerText = "تسجيل الدخول";
             });
     });
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    // 1. فحص الحالة فور فتح الصفحة (هذا ما طلبته)
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            window.location.href = "home.html";
-        }
-    });
-    
-// --- مراقب حالة المستخدم للتوجيه التلقائي ---
-auth.onAuthStateChanged((user) => {
-    if (user) {
-        // إذا كان المستخدم مسجل دخوله بالفعل، انقله فوراً للهوم
-        console.log("المستخدم مسجل دخول بالفعل:", user.email);
-        window.location.href = "home.html";
-    } else {
-        // إذا لم يكن مسجل، ابقِ في صفحة تسجيل الدخول
-        console.log("لا يوجد مستخدم مسجل حالياً");
-    }
-});
-    // --- 3. تسجيل دخول جوجل (المعدل ليعمل فوراً) ---
+    // --- 4. تسجيل دخول جوجل ---
     function googleLogin() {
         const provider = new firebase.auth.GoogleAuthProvider();
         auth.signInWithPopup(provider)
             .then((result) => {
-                console.log("Logged in:", result.user);
                 window.location.href = "home.html";
             })
             .catch((error) => {
@@ -241,7 +220,7 @@ auth.onAuthStateChanged((user) => {
             });
     }
 
-    // --- 4. إرسال مشكلة للدعم (مع شرط وجود الإيميل في الداتا بيز) ---
+    // --- 5. إرسال مشكلة للدعم ---
     async function submitHelpRequest() {
         const email = document.getElementById('helpEmail').value;
         const subject = document.getElementById('helpSubject').value;
@@ -254,8 +233,6 @@ auth.onAuthStateChanged((user) => {
         btn.innerText = "جاري التحقق من حسابك...";
 
         try {
-            // نبحث في مجموعة users عن مستخدم بهذا الإيميل
-            // ملاحظة: يجب أن يكون لديك مجموعة في Firestore باسم 'users' تخزن فيها بيانات المسجلين
             const userRef = await db.collection('users').where('email', '==', email).get();
 
             if (userRef.empty) {
@@ -265,7 +242,6 @@ auth.onAuthStateChanged((user) => {
                 return;
             }
 
-            // إذا وجده، يرسل الطلب
             await db.collection('support_requests').add({
                 user_email: email,
                 subject: subject,
@@ -285,7 +261,7 @@ auth.onAuthStateChanged((user) => {
         }
     }
 
-    // وظائف المودال (فتح وإغلاق)
+    // وظائف المودال
     function openHelp() { document.getElementById('helpModal').style.display = 'block'; }
     function closeHelp() { document.getElementById('helpModal').style.display = 'none'; }
     window.onclick = (e) => { if(e.target == document.getElementById('helpModal')) closeHelp(); }
