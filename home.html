@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omar_Media Pro - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .page-content { display: none; }
+        .page-content.active { display: block; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        #community-chat-box::-webkit-scrollbar { width: 4px; }
+        #community-chat-box::-webkit-scrollbar-thumb { background: #60a5fa; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-gray-50 overflow-hidden">
+
+    <div class="flex flex-row h-screen">
+        <!-- Sidebar -->
+        <aside class="w-72 bg-white shadow-2xl flex flex-col p-6 border-l border-gray-100 z-50">
+            <div class="mb-10 flex items-center justify-end gap-3 text-blue-700">
+                <span class="font-black text-2xl tracking-tighter">Omar_Media</span>
+                <div class="w-2 h-8 bg-blue-600 rounded-full"></div>
+            </div>
+
+            <nav id="sidebar-nav" class="flex-1 space-y-2 overflow-y-auto">
+                <button onclick="showPage('home')" data-page="home" class="nav-btn w-full flex items-center justify-between p-4 bg-blue-50 text-blue-700 rounded-2xl font-bold transition-all">
+                    <span>الرئيسية</span> <i class="fas fa-home"></i>
+                </button>
+                <button onclick="showPage('chat')" data-page="chat" class="nav-btn w-full flex items-center justify-between p-4 text-gray-500 hover:bg-gray-50 rounded-2xl transition-all">
+                    <span>دردشة المجتمع</span> <i class="fas fa-users"></i>
+                </button>
+                <button onclick="showPage('resources')" data-page="resources" class="nav-btn w-full flex items-center justify-between p-4 text-gray-500 hover:bg-gray-50 rounded-2xl transition-all">
+                    <span>المصادر</span> <i class="fas fa-folder-open"></i>
+                </button>
+                <button onclick="showPage('support')" data-page="support" class="nav-btn w-full flex items-center justify-between p-4 text-gray-500 hover:bg-gray-50 rounded-2xl transition-all">
+                    <span>الدعم الفني</span> <i class="fas fa-headset"></i>
+                </button>
+                <button onclick="showPage('profile')" data-page="profile" class="nav-btn w-full flex items-center justify-between p-4 text-gray-500 hover:bg-gray-50 rounded-2xl transition-all">
+                    <span>الملف الشخصي</span> <i class="fas fa-user-cog"></i>
+                </button>
+            </nav>
+
+            <div class="border-t pt-4">
+                <button class="w-full flex items-center justify-between p-4 text-red-500 hover:bg-red-50 rounded-2xl transition">
+                    <span>خروج</span> <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col p-8 overflow-hidden">
+            <!-- Header -->
+            <header class="flex justify-between items-center mb-6 bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <p id="header-name" class="font-bold text-gray-800 leading-none italic">جاري التحميل...</p>
+                        <span class="text-[10px] text-green-500">نشط الآن</span>
+                    </div>
+                    <img id="header-avatar" src="https://via.placeholder.com/150" class="w-12 h-12 rounded-2xl object-cover">
+                </div>
+                <div class="text-blue-600 font-bold italic">Omar_Media Pro</div>
+            </header>
+
+            <div id="main-display-area" class="flex-1 overflow-y-auto">
+                
+                <!-- 1. الرئيسية -->
+                <div id="home" class="page-content active">
+                    <div class="bg-gradient-to-r from-blue-700 to-blue-500 p-12 rounded-[3rem] text-white shadow-xl">
+                        <h2 class="text-4xl font-black mb-2">أهلاً بك يا <span id="welcome-name">...</span></h2>
+                        <p class="opacity-80 italic text-xl">لوحة التحكم الخاصة بك جاهزة.</p>
+                    </div>
+                </div>
+
+                <!-- 2. دردشة المجتمع (معدلة) -->
+                <div id="chat" class="page-content h-full">
+                    <div class="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 h-[75vh] flex flex-col overflow-hidden">
+                        <div class="p-4 bg-gray-50 border-b text-center font-bold text-gray-600">غرفة دردشة الطلاب</div>
+                        <div id="community-chat-box" class="flex-1 p-6 overflow-y-auto space-y-6 bg-gray-50/50">
+                            <!-- الرسائل تظهر هنا -->
+                        </div>
+                        <div class="p-4 bg-white border-t flex gap-3">
+                            <input id="chat-input" type="text" placeholder="اكتب رسالتك هنا..." class="flex-1 bg-gray-100 p-4 rounded-2xl outline-none focus:ring-2 ring-blue-500 transition">
+                            <button onclick="sendCommunityMsg()" class="bg-blue-600 text-white w-14 h-14 rounded-2xl shadow-lg hover:bg-blue-700 transition">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. المصادر -->
+                <div id="resources" class="page-content">
+                    <h2 class="text-2xl font-black mb-6 italic text-gray-800">المكتبة الرقمية والمصادر</h2>
+                    <div id="resources-list" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- المصادر تظهر هنا -->
+                    </div>
+                </div>
+
+                <!-- 4. الملف الشخصي (إضافة صورة) -->
+                <div id="profile" class="page-content">
+                    <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-gray-100 max-w-xl mx-auto text-right">
+                        <div class="relative w-32 h-32 mx-auto mb-8">
+                            <img id="profile-img-display" src="https://via.placeholder.com/150" class="w-full h-full rounded-[2.5rem] object-cover border-4 border-blue-100 shadow-md">
+                            <label class="absolute -bottom-2 -right-2 bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition shadow-lg">
+                                <i class="fas fa-camera text-sm"></i>
+                                <input type="file" id="image-input" class="hidden" accept="image/*">
+                            </label>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs text-gray-400 mr-2">الاسم (ثابت)</label>
+                                <input id="profile-name" type="text" readonly class="w-full bg-gray-50 p-4 rounded-2xl font-bold text-gray-500 border-none outline-none">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400 mr-2">رقم الهاتف</label>
+                                <input id="profile-phone" type="tel" class="w-full bg-gray-50 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400 mr-2">كلمة المرور</label>
+                                <input id="profile-pass" type="password" class="w-full bg-gray-50 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-500">
+                            </div>
+                            <button onclick="updateProfile()" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black hover:bg-blue-600 transition shadow-xl">حفظ التغييرات</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. الدعم الفني -->
+                <div id="support" class="page-content">
+                    <div class="max-w-2xl mx-auto bg-white p-8 rounded-[3rem] shadow-sm border border-gray-100">
+                        <h2 class="text-2xl font-black mb-6 italic">تواصل مع الإدارة</h2>
+                        <div id="support-chat-box" class="h-64 overflow-y-auto mb-4 p-4 bg-gray-50 rounded-2xl"></div>
+                        <div class="flex gap-2">
+                            <input id="support-input" type="text" class="flex-1 p-4 bg-gray-100 rounded-2xl outline-none" placeholder="اكتب مشكلتك هنا...">
+                            <button onclick="sendSupportMsg()" class="bg-green-600 text-white px-6 rounded-2xl">إرسال</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAhDmoZVk1nW2SvrXawD7IlIUtr7kRCk98",
+        authDomain: "photo-19b48.firebaseapp.com",
+        projectId: "photo-19b48",
+        storageBucket: "photo-19b48.firebasestorage.app",
+        messagingSenderId: "661677924920",
+        appId: "1:661677924920:web:94de5f445904e0036ebccd"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const userId = localStorage.getItem('omar_media_user_id') || "User_Default";
+    let userData = {};
+
+    // 1. جلب البيانات وتحميل الصور
+    async function fetchUserData() {
+        const docRef = doc(db, "custom_users", userId);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+            userData = snap.data();
+            document.getElementById('header-name').innerText = userData.name;
+            document.getElementById('welcome-name').innerText = userData.name;
+            document.getElementById('profile-name').value = userData.name;
+            document.getElementById('profile-phone').value = userData.phone || "";
+            document.getElementById('profile-pass').value = userData.pass || "";
+            
+            const userPhoto = userData.photo || 'https://via.placeholder.com/150';
+            document.getElementById('header-avatar').src = userPhoto;
+            document.getElementById('profile-img-display').src = userPhoto;
+        }
+    }
+
+    // 2. تحديث البروفايل (مع محاكاة رفع الصورة)
+    window.updateProfile = async function() {
+        const phone = document.getElementById('profile-phone').value;
+        const pass = document.getElementById('profile-pass').value;
+        
+        // ملاحظة: لرفع الصورة فعلياً لـ Firebase Storage تحتاج كود إضافي
+        // هنا نقوم بتحديث البيانات النصية فقط
+        try {
+            await updateDoc(doc(db, "custom_users", userId), {
+                phone: phone,
+                pass: pass
+            });
+            alert("✅ تم التحديث بنجاح");
+        } catch (e) { alert("خطأ في الحفظ"); }
+    }
+
+    // 3. دردشة المجتمع (المعدلة بالصور)
+    function listenCommunityChat() {
+        const q = query(collection(db, "community_messages"), orderBy("timestamp", "asc"));
+        onSnapshot(q, (snapshot) => {
+            const box = document.getElementById('community-chat-box');
+            box.innerHTML = '';
+            snapshot.forEach(d => {
+                const msg = d.data();
+                const isMe = msg.senderId === userId;
+                box.innerHTML += `
+                    <div class="flex ${isMe ? 'flex-row-reverse' : 'flex-row'} items-start gap-3">
+                        <img src="${msg.senderPhoto || 'https://via.placeholder.com/150'}" class="w-10 h-10 rounded-full object-cover shadow-sm border-2 border-white">
+                        <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+                            <span class="text-[10px] text-gray-400 px-2">${msg.senderName}</span>
+                            <div class="${isMe ? 'bg-blue-600 text-white rounded-t-2xl rounded-bl-2xl' : 'bg-white text-gray-800 rounded-t-2xl rounded-br-2xl'} p-4 shadow-sm text-sm font-bold">
+                                ${msg.text}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            box.scrollTop = box.scrollHeight;
+        });
+    }
+
+    window.sendCommunityMsg = async () => {
+        const input = document.getElementById('chat-input');
+        if(!input.value.trim()) return;
+        await addDoc(collection(db, "community_messages"), {
+            senderId: userId,
+            senderName: userData.name,
+            senderPhoto: userData.photo || "",
+            text: input.value,
+            timestamp: serverTimestamp()
+        });
+        input.value = '';
+    }
+
+    // 4. تحميل المصادر
+    function loadResources() {
+        onSnapshot(collection(db, "resources"), (snapshot) => {
+            const list = document.getElementById('resources-list');
+            list.innerHTML = '';
+            snapshot.forEach(d => {
+                const data = d.data();
+                list.innerHTML += `
+                    <div class="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition group">
+                        <div class="w-full h-32 bg-blue-50 rounded-3xl flex items-center justify-center mb-4 text-4xl group-hover:scale-105 transition">
+                            <i class="fas fa-file-pdf text-red-500"></i>
+                        </div>
+                        <h3 class="font-black text-gray-800 mb-4">${data.title}</h3>
+                        <a href="${data.url}" target="_blank" class="block w-full bg-gray-900 text-white text-center py-3 rounded-2xl font-bold hover:bg-blue-600 transition">فتح الملف</a>
+                    </div>
+                `;
+            });
+        });
+    }
+
+    // 5. الدعم الفني مباشر
+    window.sendSupportMsg = async () => {
+        const input = document.getElementById('support-input');
+        if(!input.value) return;
+        await addDoc(collection(db, "support_chats"), {
+            chatId: userId,
+            role: 'user',
+            text: input.value,
+            timestamp: serverTimestamp()
+        });
+        input.value = '';
+    }
+
+    function listenSupport() {
+        const q = query(collection(db, "support_chats"), orderBy("timestamp", "asc"));
+        onSnapshot(q, (snapshot) => {
+            const box = document.getElementById('support-chat-box');
+            box.innerHTML = '';
+            snapshot.forEach(d => {
+                const msg = d.data();
+                if(msg.chatId === userId) {
+                    const isAdmin = msg.role === 'admin';
+                    box.innerHTML += `<div class="mb-2 ${isAdmin ? 'text-left' : 'text-right'}">
+                        <span class="inline-block p-2 rounded-xl ${isAdmin ? 'bg-white border' : 'bg-blue-100 text-blue-800'} text-xs font-bold">${msg.text}</span>
+                    </div>`;
+                }
+            });
+            box.scrollTop = box.scrollHeight;
+        });
+    }
+
+    // التنقل
+    window.showPage = (id) => {
+        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(b => {
+            b.classList.remove('bg-blue-50', 'text-blue-700', 'font-bold');
+            if(b.dataset.page === id) b.classList.add('bg-blue-50', 'text-blue-700', 'font-bold');
+        });
+    };
+
+    fetchUserData();
+    listenCommunityChat();
+    loadResources();
+    listenSupport();
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omar_Media Pro - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .page-content { display: none; }
+        .page-content.active { display: block; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        #community-chat-box::-webkit-scrollbar { width: 4px; }
+        #community-chat-box::-webkit-scrollbar-thumb { background: #60a5fa; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-gray-50 overflow-hidden">
+
+    <div class="flex flex-row h-screen">
+        <!-- Sidebar -->
+        <aside class="w-72 bg-white shadow-2xl flex flex-col p-6 border-l border-gray-100 z-50">
+            <div class="mb-10 flex items-center justify-end gap-3 text-blue-700">
+                <span class="font-black text-2xl tracking-tighter">Omar_Media</span>
+                <div class="w-2 h-8 bg-blue-600 rounded-full"></div>
+            </div>
+
+            <nav id="sidebar-nav" class="flex-1 space-y-2 overflow-y-auto">
+                <button onclick="showPage('home')" data-page="home" class="nav-btn w-full flex items-center justify-between p-4 bg-blue-50 text-blue-700 rounded-2xl font-bold transition-all">
+                    <span>الرئيسية</span> <i class="fas fa-home"></i>
+                </button>
+                <button onclick="showPage('chat')" data-page="chat" class="nav-btn w-full flex items-center justify-between p-4 text-gray-500 hover:bg-gray-50 rounded-2xl transition-all">
+                    <span>دردشة المجتمع</span> <i class="fas fa-users"></i>
+                </button>
+                <button onclick="showPage('resources')" data-page="resources" class="nav-btn w-full flex items-center justify-between p-4 text-gray-500 hover:bg-gray-50 rounded-2xl transition-all">
+                    <span>المصادر</span> <i class="fas fa-folder-open"></i>
+                </button>
+                <button onclick="showPage('support')" data-page="support" class="nav-btn w-full flex items-center justify-between p-4 text-gray-500 hover:bg-gray-50 rounded-2xl transition-all">
+                    <span>الدعم الفني</span> <i class="fas fa-headset"></i>
+                </button>
+                <button onclick="showPage('profile')" data-page="profile" class="nav-btn w-full flex items-center justify-between p-4 text-gray-500 hover:bg-gray-50 rounded-2xl transition-all">
+                    <span>الملف الشخصي</span> <i class="fas fa-user-cog"></i>
+                </button>
+            </nav>
+
+            <div class="border-t pt-4">
+                <button class="w-full flex items-center justify-between p-4 text-red-500 hover:bg-red-50 rounded-2xl transition">
+                    <span>خروج</span> <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col p-8 overflow-hidden">
+            <!-- Header -->
+            <header class="flex justify-between items-center mb-6 bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <p id="header-name" class="font-bold text-gray-800 leading-none italic">جاري التحميل...</p>
+                        <span class="text-[10px] text-green-500">نشط الآن</span>
+                    </div>
+                    <img id="header-avatar" src="https://via.placeholder.com/150" class="w-12 h-12 rounded-2xl object-cover">
+                </div>
+                <div class="text-blue-600 font-bold italic">Omar_Media Pro</div>
+            </header>
+
+            <div id="main-display-area" class="flex-1 overflow-y-auto">
+                
+                <!-- 1. الرئيسية -->
+                <div id="home" class="page-content active">
+                    <div class="bg-gradient-to-r from-blue-700 to-blue-500 p-12 rounded-[3rem] text-white shadow-xl">
+                        <h2 class="text-4xl font-black mb-2">أهلاً بك يا <span id="welcome-name">...</span></h2>
+                        <p class="opacity-80 italic text-xl">لوحة التحكم الخاصة بك جاهزة.</p>
+                    </div>
+                </div>
+
+                <!-- 2. دردشة المجتمع (معدلة) -->
+                <div id="chat" class="page-content h-full">
+                    <div class="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 h-[75vh] flex flex-col overflow-hidden">
+                        <div class="p-4 bg-gray-50 border-b text-center font-bold text-gray-600">غرفة دردشة الطلاب</div>
+                        <div id="community-chat-box" class="flex-1 p-6 overflow-y-auto space-y-6 bg-gray-50/50">
+                            <!-- الرسائل تظهر هنا -->
+                        </div>
+                        <div class="p-4 bg-white border-t flex gap-3">
+                            <input id="chat-input" type="text" placeholder="اكتب رسالتك هنا..." class="flex-1 bg-gray-100 p-4 rounded-2xl outline-none focus:ring-2 ring-blue-500 transition">
+                            <button onclick="sendCommunityMsg()" class="bg-blue-600 text-white w-14 h-14 rounded-2xl shadow-lg hover:bg-blue-700 transition">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. المصادر -->
+                <div id="resources" class="page-content">
+                    <h2 class="text-2xl font-black mb-6 italic text-gray-800">المكتبة الرقمية والمصادر</h2>
+                    <div id="resources-list" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- المصادر تظهر هنا -->
+                    </div>
+                </div>
+
+                <!-- 4. الملف الشخصي (إضافة صورة) -->
+                <div id="profile" class="page-content">
+                    <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-gray-100 max-w-xl mx-auto text-right">
+                        <div class="relative w-32 h-32 mx-auto mb-8">
+                            <img id="profile-img-display" src="https://via.placeholder.com/150" class="w-full h-full rounded-[2.5rem] object-cover border-4 border-blue-100 shadow-md">
+                            <label class="absolute -bottom-2 -right-2 bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition shadow-lg">
+                                <i class="fas fa-camera text-sm"></i>
+                                <input type="file" id="image-input" class="hidden" accept="image/*">
+                            </label>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs text-gray-400 mr-2">الاسم (ثابت)</label>
+                                <input id="profile-name" type="text" readonly class="w-full bg-gray-50 p-4 rounded-2xl font-bold text-gray-500 border-none outline-none">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400 mr-2">رقم الهاتف</label>
+                                <input id="profile-phone" type="tel" class="w-full bg-gray-50 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400 mr-2">كلمة المرور</label>
+                                <input id="profile-pass" type="password" class="w-full bg-gray-50 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-500">
+                            </div>
+                            <button onclick="updateProfile()" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black hover:bg-blue-600 transition shadow-xl">حفظ التغييرات</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. الدعم الفني -->
+                <div id="support" class="page-content">
+                    <div class="max-w-2xl mx-auto bg-white p-8 rounded-[3rem] shadow-sm border border-gray-100">
+                        <h2 class="text-2xl font-black mb-6 italic">تواصل مع الإدارة</h2>
+                        <div id="support-chat-box" class="h-64 overflow-y-auto mb-4 p-4 bg-gray-50 rounded-2xl"></div>
+                        <div class="flex gap-2">
+                            <input id="support-input" type="text" class="flex-1 p-4 bg-gray-100 rounded-2xl outline-none" placeholder="اكتب مشكلتك هنا...">
+                            <button onclick="sendSupportMsg()" class="bg-green-600 text-white px-6 rounded-2xl">إرسال</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAhDmoZVk1nW2SvrXawD7IlIUtr7kRCk98",
+        authDomain: "photo-19b48.firebaseapp.com",
+        projectId: "photo-19b48",
+        storageBucket: "photo-19b48.firebasestorage.app",
+        messagingSenderId: "661677924920",
+        appId: "1:661677924920:web:94de5f445904e0036ebccd"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const userId = localStorage.getItem('omar_media_user_id') || "User_Default";
+    let userData = {};
+
+    // 1. جلب البيانات وتحميل الصور
+    async function fetchUserData() {
+        const docRef = doc(db, "custom_users", userId);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+            userData = snap.data();
+            document.getElementById('header-name').innerText = userData.name;
+            document.getElementById('welcome-name').innerText = userData.name;
+            document.getElementById('profile-name').value = userData.name;
+            document.getElementById('profile-phone').value = userData.phone || "";
+            document.getElementById('profile-pass').value = userData.pass || "";
+            
+            const userPhoto = userData.photo || 'https://via.placeholder.com/150';
+            document.getElementById('header-avatar').src = userPhoto;
+            document.getElementById('profile-img-display').src = userPhoto;
+        }
+    }
+
+    // 2. تحديث البروفايل (مع محاكاة رفع الصورة)
+    window.updateProfile = async function() {
+        const phone = document.getElementById('profile-phone').value;
+        const pass = document.getElementById('profile-pass').value;
+        
+        // ملاحظة: لرفع الصورة فعلياً لـ Firebase Storage تحتاج كود إضافي
+        // هنا نقوم بتحديث البيانات النصية فقط
+        try {
+            await updateDoc(doc(db, "custom_users", userId), {
+                phone: phone,
+                pass: pass
+            });
+            alert("✅ تم التحديث بنجاح");
+        } catch (e) { alert("خطأ في الحفظ"); }
+    }
+
+    // 3. دردشة المجتمع (المعدلة بالصور)
+    function listenCommunityChat() {
+        const q = query(collection(db, "community_messages"), orderBy("timestamp", "asc"));
+        onSnapshot(q, (snapshot) => {
+            const box = document.getElementById('community-chat-box');
+            box.innerHTML = '';
+            snapshot.forEach(d => {
+                const msg = d.data();
+                const isMe = msg.senderId === userId;
+                box.innerHTML += `
+                    <div class="flex ${isMe ? 'flex-row-reverse' : 'flex-row'} items-start gap-3">
+                        <img src="${msg.senderPhoto || 'https://via.placeholder.com/150'}" class="w-10 h-10 rounded-full object-cover shadow-sm border-2 border-white">
+                        <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+                            <span class="text-[10px] text-gray-400 px-2">${msg.senderName}</span>
+                            <div class="${isMe ? 'bg-blue-600 text-white rounded-t-2xl rounded-bl-2xl' : 'bg-white text-gray-800 rounded-t-2xl rounded-br-2xl'} p-4 shadow-sm text-sm font-bold">
+                                ${msg.text}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            box.scrollTop = box.scrollHeight;
+        });
+    }
+
+    window.sendCommunityMsg = async () => {
+        const input = document.getElementById('chat-input');
+        if(!input.value.trim()) return;
+        await addDoc(collection(db, "community_messages"), {
+            senderId: userId,
+            senderName: userData.name,
+            senderPhoto: userData.photo || "",
+            text: input.value,
+            timestamp: serverTimestamp()
+        });
+        input.value = '';
+    }
+
+    // 4. تحميل المصادر
+    function loadResources() {
+        onSnapshot(collection(db, "resources"), (snapshot) => {
+            const list = document.getElementById('resources-list');
+            list.innerHTML = '';
+            snapshot.forEach(d => {
+                const data = d.data();
+                list.innerHTML += `
+                    <div class="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition group">
+                        <div class="w-full h-32 bg-blue-50 rounded-3xl flex items-center justify-center mb-4 text-4xl group-hover:scale-105 transition">
+                            <i class="fas fa-file-pdf text-red-500"></i>
+                        </div>
+                        <h3 class="font-black text-gray-800 mb-4">${data.title}</h3>
+                        <a href="${data.url}" target="_blank" class="block w-full bg-gray-900 text-white text-center py-3 rounded-2xl font-bold hover:bg-blue-600 transition">فتح الملف</a>
+                    </div>
+                `;
+            });
+        });
+    }
+
+    // 5. الدعم الفني مباشر
+    window.sendSupportMsg = async () => {
+        const input = document.getElementById('support-input');
+        if(!input.value) return;
+        await addDoc(collection(db, "support_chats"), {
+            chatId: userId,
+            role: 'user',
+            text: input.value,
+            timestamp: serverTimestamp()
+        });
+        input.value = '';
+    }
+
+    function listenSupport() {
+        const q = query(collection(db, "support_chats"), orderBy("timestamp", "asc"));
+        onSnapshot(q, (snapshot) => {
+            const box = document.getElementById('support-chat-box');
+            box.innerHTML = '';
+            snapshot.forEach(d => {
+                const msg = d.data();
+                if(msg.chatId === userId) {
+                    const isAdmin = msg.role === 'admin';
+                    box.innerHTML += `<div class="mb-2 ${isAdmin ? 'text-left' : 'text-right'}">
+                        <span class="inline-block p-2 rounded-xl ${isAdmin ? 'bg-white border' : 'bg-blue-100 text-blue-800'} text-xs font-bold">${msg.text}</span>
+                    </div>`;
+                }
+            });
+            box.scrollTop = box.scrollHeight;
+        });
+    }
+
+    // التنقل
+    window.showPage = (id) => {
+        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(b => {
+            b.classList.remove('bg-blue-50', 'text-blue-700', 'font-bold');
+            if(b.dataset.page === id) b.classList.add('bg-blue-50', 'text-blue-700', 'font-bold');
+        });
+    };
+
+    fetchUserData();
+    listenCommunityChat();
+    loadResources();
+    listenSupport();
+</script>
+</body>
+</html>
