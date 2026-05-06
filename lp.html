@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omar_Media | التفاعلي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --dark-bg: #0a0a0c;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            margin: 0; background: var(--dark-bg); color: white;
+            font-family: 'Cairo', sans-serif; overflow: hidden;
+            display: flex; flex-direction: column; height: 100vh;
+        }
+
+        /* تصميم الهيدر الخاص بك */
+        header {
+            padding: 15px 30px; background: var(--glass);
+            backdrop-filter: blur(10px); display: flex;
+            justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(0, 210, 255, 0.3);
+        }
+
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+
+        /* منطقة العرض */
+        #viewer-area {
+            flex: 1; position: relative;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        canvas#draw-canvas {
+            position: absolute; top: 0; left: 0;
+            z-index: 100; pointer-events: none;
+        }
+
+        .slide-container {
+            width: 90%; height: 85%; background: #1a1a1d;
+            border-radius: 20px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        /* أزرار التحكم السفلي */
+        .controls {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%); background: rgba(0,0,0,0.8);
+            padding: 10px 25px; border-radius: 50px;
+            display: flex; gap: 20px; border: 1px solid var(--primary);
+            z-index: 200;
+        }
+
+        .btn-tool {
+            background: none; border: none; color: white;
+            font-size: 1.3rem; cursor: pointer; transition: 0.3s;
+        }
+
+        .btn-tool:hover { color: var(--primary); transform: scale(1.2); }
+        .btn-tool.active { color: #ff4757; }
+
+        /* زر الرفع */
+        #upload-btn {
+            background: var(--primary); color: black;
+            padding: 10px 20px; border-radius: 10px;
+            cursor: pointer; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">OMAR_MEDIA | زعيم البرمجة</div>
+    <label id="upload-btn" for="file-input">📂 رفع ملف PPTX</label>
+    <input type="file" id="file-input" hidden accept=".pptx">
+</header>
+
+<div id="viewer-area">
+    <canvas id="draw-canvas"></canvas>
+    
+    <div class="slide-container" id="slide-content">
+        <h2 id="slide-title">ارفع الملف للبدء..</h2>
+        <div id="interactive-body"></div>
+    </div>
+</div>
+
+<div class="controls">
+    <button class="btn-tool" onclick="changeSlide(-1)"><i class="fas fa-chevron-right"></i></button>
+    <button class="btn-tool" id="pen-btn" onclick="togglePen()"><i class="fas fa-pen-nib"></i></button>
+    <button class="btn-tool" onclick="clearCanvas()"><i class="fas fa-eraser"></i></button>
+    <button class="btn-tool" onclick="toggleFull()"><i class="fas fa-expand-arrows-alt"></i></button>
+    <button class="btn-tool" onclick="changeSlide(1)"><i class="fas fa-chevron-left"></i></button>
+</div>
+
+<script>
+    const canvas = document.getElementById('draw-canvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let penActive = false;
+
+    // إعداد حجم الكانفاس
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.onresize = resizeCanvas;
+    resizeCanvas();
+
+    // تشغيل القلم
+    function togglePen() {
+        penActive = !penActive;
+        canvas.style.pointerEvents = penActive ? 'auto' : 'none';
+        document.getElementById('pen-btn').classList.toggle('active');
+    }
+
+    canvas.onmousedown = () => isDrawing = true;
+    canvas.onmouseup = () => { isDrawing = false; ctx.beginPath(); };
+    canvas.onmousemove = (e) => {
+        if (!isDrawing || !penActive) return;
+        ctx.strokeStyle = '#00d2ff';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.lineTo(e.clientX, e.clientY);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(e.clientX, e.clientY);
+    };
+
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+    function toggleFull() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    }
+
+    // محاكاة فتح الملف (بما أن Netlify يحتاج ملفات ثابتة)
+    document.getElementById('file-input').onchange = function(e) {
+        const fileName = e.target.files[0].name;
+        document.getElementById('slide-title').innerText = "تم تحميل: " + fileName;
+        document.getElementById('interactive-body').innerHTML = `
+            <div style="text-align:center">
+                <p>تم استيراد الشرائح بنجاح</p>
+                <button style="padding:15px; background:var(--primary); border:none; border-radius:10px; cursor:pointer" 
+                onclick="alert('إجابة صحيحة!')">اختبار التفاعل: اضغط هنا</button>
+            </div>
+        `;
+    };
+
+    function changeSlide(n) {
+        clearCanvas();
+        // هنا يتم إضافة منطق التنقل بين الصور أو الشرائح المستخرجة
+        console.log("الانتقال للشريحة: " + n);
+    }
+</script>
+
+</body>
+</html>
