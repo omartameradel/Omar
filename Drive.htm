@@ -428,6 +428,13 @@
       border: 0;
       overflow: hidden
     }
+    .footer {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 50px
+    }
+    
   </style>
 
   <div id="modal_parent">
@@ -454,6 +461,9 @@
     <canvas class="emscripten" id="canvas" tabindex="-1"></canvas>
     <div id="gradient"></div>
     <div id="webview_content"></div>
+  </div>
+  <div class="footer">
+    <p style="font-size: .7em; color: #141414; font-family: sans-serif; text-align: center; margin-top: 10px">Created by <a href="https://omartamer.netlify.app/">Omar_Media</a></p>
   </div>
   <script type="text/javascript">
     var pokiDebug = false;
